@@ -1,5 +1,10 @@
-"""Convert an Excel spreadsheet to a tab-delimited text file"""
+"""
+Convert an Excel spreadsheet to a tab-delimited text file.
+Prints output to standard output.
+"""
 import sys
+import datetime
+
 try:
     import xlrd
 except ImportError:
@@ -28,7 +33,7 @@ def get_rows(xls_fname, sheet_name=None):
     Returns a list of table rows.  Each table row is a list of columns.  
     Each column is a string.
     """
-    book = xlrd.open_workbook(xls_fname)
+    book = xlrd.open_workbook(xls_fname, formatting_info=True)
     #
     # TODO: proper handling of exceptions and error conditions.  Use asserts
     # for now to see exactly what can break.
@@ -46,7 +51,24 @@ def get_rows(xls_fname, sheet_name=None):
     for i in range(sheet.nrows):
         col = []
         for j in range(sheet.ncols):
-            val = str(sheet.cell_value(i, j))
+            cell = sheet.cell(i,j)
+            #
+            # TODO: all numbers are represented in floats.
+            # Is it required to determine what the number was displayed as in
+            # Excel?  e.g. 4 vs 4.0
+            #
+            format_key = book.xf_list[cell.xf_index].format_key
+            _format = book.format_map[format_key]
+            if _format.type == xlrd.FDT:
+                date_tuple = xlrd.xldate_as_tuple(cell.value, book.datemode)
+                date = datetime.datetime(*date_tuple)
+                #
+                # TODO: convert _format.format_str into something datetime
+                # will understand
+                #
+                val = str(date)
+            else:
+                val = str(cell.value)
             #
             # TODO: can this actually happen?
             #
