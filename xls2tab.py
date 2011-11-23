@@ -68,7 +68,13 @@ def get_rows(xls_fname, sheet_name=None):
                 #
                 val = str(date)
             else:
-                val = str(cell.value)
+                #
+                # Get rid of unnecessary floating point numbers.
+                #
+                if type(cell.value) == float and cell.value == int(cell.value):
+                    val = str(int(cell.value))
+                else:
+                    val = str(cell.value)
             #
             # TODO: can this actually happen?
             #
