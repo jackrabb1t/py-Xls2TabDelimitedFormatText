@@ -13,7 +13,8 @@ except ImportError:
 
 def create_parser():
     from optparse import OptionParser
-    parser = OptionParser('usage: python %s filename.xls [options]' % __file__)
+    parser = OptionParser(
+            'usage: python %s filename.xls output.tsv [options]' % __file__)
     parser.add_option(
             '--worksheet', 
             '-w', 
@@ -86,11 +87,18 @@ def get_rows(xls_fname, sheet_name=None):
 def main():
     parser = create_parser()
     (options, args) = parser.parse_args()
-    if len(args) != 1:
+    if len(args) != 2:
         parser.error('incorrect number of arguments')
 
     rows = get_rows(args[0], options.worksheet)
-    print '\n'.join(map(lambda x: '\t'.join(x), rows))
+
+    try:
+        fout = open(args[1], 'w')
+        fout.write('\n'.join(map(lambda x: '\t'.join(x), rows)))
+        fout.close()
+        print 'OK'
+    except IOError, ioe:
+        print >> sys.stderr, 'unable to write to file: %s' % args[1]
 
 if __name__ == '__main__':
     main()
